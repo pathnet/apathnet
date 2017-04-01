@@ -28,7 +28,7 @@ import android.widget.TextView;
 
 import com.pathnet.R;
 import com.pathnet.base.BaseActivity;
-import com.pathnet.model.WeixinQueryBean;
+import com.pathnet.model.ToutiaoIndexBean;
 import com.pathnet.network.RetrofitUtils;
 import com.pathnet.utils.UiUtils;
 
@@ -187,14 +187,14 @@ public class LoginActivity extends BaseActivity implements LoaderCallbacks<Curso
 
     private void sendServerRequest(boolean progress) {
         showProgress(progress);
-        RetrofitUtils.getApi(mContext).post("weixin", "query", new HashMap<String, String>(), WeixinQueryBean.class, new RetrofitUtils.OnRetrofitResponse<WeixinQueryBean>() {
+        RetrofitUtils.getApi(mContext).post("toutiao", "index", new HashMap<String, String>(), ToutiaoIndexBean.class, new RetrofitUtils.OnRetrofitResponse<ToutiaoIndexBean>() {
             @Override
             public void onCompleted() {
 
             }
 
             @Override
-            public void onNext(WeixinQueryBean toBean) {
+            public void onNext(ToutiaoIndexBean toBean) {
                 showProgress(false);
                 if (toBean != null) {
 
