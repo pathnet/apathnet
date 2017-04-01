@@ -1,4 +1,4 @@
-package com.pathnet.apathnet;
+package com.pathnet.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -9,14 +9,12 @@ import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -28,7 +26,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.pathnet.R;
+import com.pathnet.base.BaseActivity;
+import com.pathnet.model.WeixinQueryBean;
+import com.pathnet.network.RetrofitUtils;
+import com.pathnet.utils.UiUtils;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -36,7 +41,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * 登录逻辑
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends BaseActivity implements LoaderCallbacks<Cursor>, TextView.OnEditorActionListener {
 
     /**
      * 请求读取联系人
@@ -46,49 +51,53 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     /**
      * 设定账号.
      */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{"pathnet@live.cn", "123456"};
-
-    /**
-     * 登录任务
-     */
-    private UserLoginTask mAuthTask = null;
+    private static final String[] DUMMY_CREDENTIALS = new String[]{"pathnet", "123456"};
 
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private Button mEmailSignInButton;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        // Set up the login form.
+    public int getLayoutId() {
+        return R.layout.activity_login;
+    }
+
+    @Override
+    public void initView() {
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
+        mPasswordView.setOnEditorActionListener(this);
+        //登录按钮
+        mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setOnClickListener(this);
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
-
+        //sollview
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    @Override
+    public void initListener() {
+
+    }
+
+    @Override
+    public void initData() {
+
+    }
+
+    @Override
+    public void processClick(View v) {
+        switch (v.getId()) {
+            case R.id.email_sign_in_button:
+                attemptLogin();
+                break;
+        }
     }
 
     /*自动填写*/
@@ -140,16 +149,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * 登录前检查账号
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-        // 重置错误.
+        // 重置错误
         mEmailView.setError(null);
         mPasswordView.setError(null);
 
         // 获取用户名账号.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        String email = UiUtils.getText(mEmailView);
+        String password = UiUtils.getText(mPasswordView);
 
         boolean cancel = false;
         View focusView = null;
@@ -161,7 +167,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             cancel = true;
         }
 
-        // Check for a valid email address.
+        //用户名为空
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
@@ -171,19 +177,35 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             focusView = mEmailView;
             cancel = true;
         }
-        //如果发现错误,请求焦点,如果正常显示登录进度条,执行登录任务
+        //如果发生错误将焦点还给错误的输入框
         if (cancel) {
             focusView.requestFocus();
         } else {
-            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            sendServerRequest(true);
         }
+    }
+
+    private void sendServerRequest(boolean progress) {
+        showProgress(progress);
+        RetrofitUtils.getApi(mContext).post("weixin", "query", new HashMap<String, String>(), WeixinQueryBean.class, new RetrofitUtils.OnRetrofitResponse<WeixinQueryBean>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onNext(WeixinQueryBean toBean) {
+                showProgress(false);
+                if (toBean != null) {
+
+                }
+            }
+        });
     }
 
     /*判断账号的有效性*/
     private boolean isEmailValid(String email) {
-        return email.trim().contains(" ");
+        return email.trim() != null;
     }
 
     /*判断密码有效性*/
@@ -262,6 +284,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView.setAdapter(adapter);
     }
 
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        if (actionId == R.id.login || actionId == EditorInfo.IME_NULL) {
+            attemptLogin();
+            return true;
+        }
+        return false;
+    }
+
 
     private interface ProfileQuery {
         String[] PROJECTION = {
@@ -270,59 +301,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         };
         int ADDRESS = 0;
         int IS_PRIMARY = 1;
-    }
-
-    /**
-     * 异步任务
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            //验证用户名和密码
-            try {
-                // 模拟网络访问.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    //用户名密码正确返回true
-                    return pieces[1].equals(mPassword);
-                }
-            }
-            //注册新账号逻辑
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
     }
 }
 
