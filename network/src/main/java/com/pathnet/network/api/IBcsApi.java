@@ -23,7 +23,8 @@ public interface IBcsApi {
     //测试
     String APPID_STRING = "bcs-app"; //正式和测试升级appid
     String CHECKVESION_STRING = "http://192.168.3.220:6555/appupdate/";//测试升级
-    String BASE_URL = "http://v.juhe.cn/";//测试
+//    String BASE_URL = "http://v.juhe.cn/";//测试
+    String BASE_URL = "http://japi.juhe.cn/";//测试
 
     //正式
 /*    String APPID_STRING = "bcs-app"; //正式和测试升级appid

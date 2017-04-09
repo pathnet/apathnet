@@ -239,12 +239,32 @@ public class RetrofitUtils {
      * @param response 回调
      * @param <T>
      */
-    public <T> void post(final String url1, final String url2, Map<String, String> map, final Class<T> clzz, final OnRetrofitResponse response) {
+    public <T> void post(final String url1, final String url2, Map<String, Object> map, final Class<T> clzz, final OnRetrofitResponse response) {
         try {
             mService.post(url1, url2, map)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new ResponseObserverManager(url1, url2, clzz, response));
+        } catch (Exception e) {
+            LogUtils.e(LogUtils.RESPONSE_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * RxJava公共方法
+     *
+     * @param url1     接口名
+     * @param map      参数
+     * @param clzz     获取的bean对象
+     * @param response 回调
+     * @param <T>
+     */
+    public <T> void get(final String url1, Map<String, Object> map, final Class<T> clzz, final OnRetrofitResponse response) {
+        try {
+            mService.get(map)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new ResponseObserverManager(url1, clzz, response));
         } catch (Exception e) {
             LogUtils.e(LogUtils.RESPONSE_ERROR, e.getMessage());
         }

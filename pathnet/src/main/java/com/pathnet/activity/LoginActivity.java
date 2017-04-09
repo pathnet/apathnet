@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.pathnet.R;
 import com.pathnet.base.BaseActivity;
+import com.pathnet.model.JokeContentBean;
 import com.pathnet.model.ToutiaoIndexBean;
 import com.pathnet.network.RetrofitUtils;
 import com.pathnet.utils.UiUtils;
@@ -35,6 +36,7 @@ import com.pathnet.utils.UiUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -187,7 +189,15 @@ public class LoginActivity extends BaseActivity implements LoaderCallbacks<Curso
 
     private void sendServerRequest(boolean progress) {
         showProgress(progress);
-        RetrofitUtils.getApi(mContext).post("toutiao", "index", new HashMap<String, String>(), ToutiaoIndexBean.class, new RetrofitUtils.OnRetrofitResponse<ToutiaoIndexBean>() {
+//        http:
+//japi.juhe.cn/joke/content/list.from?key=您申请的KEY&page=2&pagesize=10&sort=asc&time=1418745237
+        Map<String, Object> map = new HashMap<>();
+        map.put("key","416bae2c051dd2c541bd6d79c44339c3");
+        map.put("page",0);
+        map.put("pagesize",10);
+        map.put("time",System.currentTimeMillis());
+
+        RetrofitUtils.getApi(mContext).get("joke/content/list.from?key=416bae2c051dd2c541bd6d79c44339c3&page=2&pagesize=10&sort=asc&time=1418745237", map, JokeContentBean.class, new RetrofitUtils.OnRetrofitResponse<ToutiaoIndexBean>() {
             @Override
             public void onCompleted() {
 

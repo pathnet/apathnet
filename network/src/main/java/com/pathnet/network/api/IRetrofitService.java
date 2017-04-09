@@ -110,5 +110,6 @@ public interface IRetrofitService<T> {
     @GET("/api")
     Call<ResponseBody> getApiString(@QueryMap Map<String, String> params);
 
-
+    @GET("/joke/content/list.from?key=416bae2c051dd2c541bd6d79c44339c3&page=2&pagesize=10&sort=asc&time=1418745237")
+    Observable<ResponseBody> get(@QueryMap Map<String, Object> params);
 }
